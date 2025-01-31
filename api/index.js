@@ -113,10 +113,9 @@ client.on('interactionCreate', async (interaction) => {
       new ButtonBuilder().setCustomId('semester_8').setLabel('8º Semestre').setStyle(ButtonStyle.Primary)
     );
   
-    await interaction.reply({
+    await interaction.update({
       content: `${interaction.user}, escolha o seu semestre:`,
       components: [semesterButtonsRow1, semesterButtonsRow2],
-      ephemeral: true,
     });
   }
 
@@ -136,10 +135,9 @@ client.on('interactionCreate', async (interaction) => {
       new ButtonBuilder().setCustomId('semester_8').setLabel('8º Semestre').setStyle(ButtonStyle.Primary)
     );
   
-    await interaction.reply({
+    await interaction.update({
       content: `${interaction.user}, escolha o seu semestre:`,
       components: [semesterButtonsRow1, semesterButtonsRow2],
-      ephemeral: true,
     });
   }
 
@@ -152,10 +150,9 @@ client.on('interactionCreate', async (interaction) => {
       new ButtonBuilder().setCustomId('semester_4').setLabel('4º Semestre').setStyle(ButtonStyle.Primary)
     );
   
-    await interaction.reply({
+    await interaction.update({
       content: `${interaction.user}, escolha o seu semestre:`,
       components: [semesterButtonsRow1],
-      ephemeral: true,
     });
   }
   

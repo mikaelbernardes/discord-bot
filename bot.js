@@ -12,20 +12,40 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
-const semesterRoles = {
-  1: '1333841926100877434',
-  2: '1333842872599969965',
-  3: '1333842927822045255',
-  4: '1333842969543053363',
-  5: '1333843010907275387',
-  6: '1333843063428350084',
-  7: '1333843107019620465',
-  8: '1333843152225701998',
-};
+const computerScienceRole = {
+  1: '1334652619309977660',
+  2: '1334652761584959569',
+  3: '1334652837514313750',
+  4: '1334652899384623185',
+  5: '1334652970419093697',
+  6: '1334653035590320139',
+  7: '1334653137541267616',
+  8: '1334653189592584212',
+}
+
+const softwareEngineerRole = {
+  1: '1334653435282460702',
+  2: '1334653513917267968',
+  3: '1334653601426968596',
+  4: '1334653688618156054',
+  5: '1334653759736778803',
+  6: '1334653821044916305',
+  7: '1334653888523010150',
+  8: '1334653974510440468',
+}
+
+const adsRole = {
+  1: '1334654034023419957',
+  2: '1334654128860954684',
+  3: '1334654213799804958',
+  4: '1334654274285731941',
+}
 
 client.once('ready', () => {
   console.log(`Bot está online como ${client.user.tag}`);
 });
+
+let selectedCourseRole = null;
 
 client.on('guildMemberAdd', async (member) => {
   try {
@@ -48,7 +68,15 @@ client.on('guildMemberAdd', async (member) => {
       new ButtonBuilder()
         .setCustomId('course_cs')
         .setLabel('Ciência da Computação')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId('course_es')
+        .setLabel('Engenharia de Software')
         .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId('course_ads')
+        .setLabel('Análise e Desenvolvimento de Sistemas')
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId('course_other')
         .setLabel('Outro Curso')
@@ -70,6 +98,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
   if (interaction.customId === 'course_cs') {
+    selectedCourseRole = computerScienceRole;
     const semesterButtonsRow1 = new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId('semester_1').setLabel('1º Semestre').setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId('semester_2').setLabel('2º Semestre').setStyle(ButtonStyle.Primary),
@@ -90,8 +119,46 @@ client.on('interactionCreate', async (interaction) => {
       ephemeral: true,
     });
   }
-  
 
+  if (interaction.customId === 'course_es') {
+    selectedCourseRole = softwareEngineerRole;
+    const semesterButtonsRow1 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('semester_1').setLabel('1º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_2').setLabel('2º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_3').setLabel('3º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_4').setLabel('4º Semestre').setStyle(ButtonStyle.Primary)
+    );
+  
+    const semesterButtonsRow2 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('semester_5').setLabel('5º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_6').setLabel('6º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_7').setLabel('7º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_8').setLabel('8º Semestre').setStyle(ButtonStyle.Primary)
+    );
+  
+    await interaction.reply({
+      content: `${interaction.user}, escolha o seu semestre:`,
+      components: [semesterButtonsRow1, semesterButtonsRow2],
+      ephemeral: true,
+    });
+  }
+
+  if (interaction.customId === 'course_ads') {
+    selectedCourseRole = adsRole;
+    const semesterButtonsRow1 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('semester_1').setLabel('1º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_2').setLabel('2º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_3').setLabel('3º Semestre').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('semester_4').setLabel('4º Semestre').setStyle(ButtonStyle.Primary)
+    );
+  
+    await interaction.reply({
+      content: `${interaction.user}, escolha o seu semestre:`,
+      components: [semesterButtonsRow1],
+      ephemeral: true,
+    });
+  }
+  
   if (interaction.customId.startsWith('semester_')) {
     const selectedSemester = interaction.customId.split('_')[1];
 
@@ -115,9 +182,9 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.customId.startsWith('confirm_')) {
     const selectedSemester = interaction.customId.split('_')[1];
-    const roleId = semesterRoles[selectedSemester];
+    const courseRoleId = selectedCourseRole[selectedSemester];
 
-    if (!roleId) {
+    if (!courseRoleId) {
       return interaction.reply({
         content: 'Cargo não encontrado para o semestre escolhido.',
         ephemeral: true,
@@ -125,10 +192,10 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     try {
-      await interaction.member.roles.add(roleId);
+      await interaction.member.roles.add(courseRoleId);
 
       await interaction.reply({
-        content: `Você recebeu o cargo do ${selectedSemester}º semestre!`,
+        content: `Você recebeu o cargo do ${selectedSemester}º semestre do seu curso!`,
         ephemeral: true,
       });
 
@@ -158,13 +225,26 @@ client.on('interactionCreate', async (interaction) => {
   }
 
   if (interaction.customId === 'course_other') {
-    await interaction.reply({
-      content: 'Você não pode se registrar com outro curso.',
-      ephemeral: true,
-    });
+    try {
+      await interaction.reply({
+        content: 'Você escolheu um curso não permitido. Você será banido do servidor.',
+        ephemeral: true,
+      });
 
-    const tempChannel = interaction.channel;
-    await tempChannel.delete();
+      // Ban the user
+      await interaction.member.ban({
+        reason: 'Tentativa de registro com curso não permitido'
+      });
+
+      const tempChannel = interaction.channel;
+      await tempChannel.delete();
+    } catch (error) {
+      console.error('Erro ao banir usuário:', error);
+      await interaction.reply({
+        content: 'Ocorreu um erro ao tentar banir você.',
+        ephemeral: true,
+      });
+    }
   }
 });
 
